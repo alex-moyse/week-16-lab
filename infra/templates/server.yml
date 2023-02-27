@@ -1,0 +1,131 @@
+Description: EC2 instance for greetings app
+
+Parameters:
+  # inject in the latest AMI
+  Linux2Ami:
+    Type: String
+  # used to open up ssh port
+  myIpAddress:
+    Type: String
+  UserDataScript:
+    Type: String
+  spotInstancePrice:
+    Type: String
+    Default: "0.015"
+  stackName:
+    Type: String
+  instanceType:
+    Type: String
+    Default: t3.medium
+
+Resources:
+  # which ports open on this box
+ 
+  CsLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      # IamInstanceProfile: !Ref CsServerInstanceProfile
+      ImageId: !Sub ${Linux2Ami}
+      InstanceMonitoring: false
+      InstanceType: !Sub ${instanceType} 
+      AssociatePublicIpAddress: true
+      SpotPrice: !Sub "${spotInstancePrice}"
+      SecurityGroups: 
+        - !Ref CsServerSecurityGroup
+      UserData:
+        Fn::Base64: !Ref UserDataScript
+
+  CsServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SG for cs server
+      GroupName: cs-server-sg
+      SecurityGroupIngress:
+        - Description: SSH from my current ip
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Sub "${myIpAddress}"
+        - Description: Web from my current ip for testing
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Sub "${myIpAddress}"
+        - Description: cs-1.6-svr UDP 26900
+          IpProtocol: udp
+          FromPort: 26900
+          ToPort: 26900
+          CidrIp: 0.0.0.0/0
+        - Description: cs-1.6-svr UDP 27020
+          IpProtocol: udp
+          FromPort: 27020
+          ToPort: 27020
+          CidrIp: 0.0.0.0/0
+        - Description: cs-1.6-svr UDP 27015
+          IpProtocol: udp
+          FromPort: 27015
+          ToPort: 27015
+          CidrIp: 0.0.0.0/0
+        - Description: cs-1.6-svr TCP 27015
+          IpProtocol: tcp
+          FromPort: 27015
+          ToPort: 27015
+          CidrIp: 0.0.0.0/0
+      VpcId:
+        Fn::ImportValue: !Sub "${stackName}-net-vpc"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-sg"
+
+  # ec2 iam-instance-profile
+  # CsServerInstanceProfile:
+  #   Type: AWS::IAM::InstanceProfile
+  #   Properties:
+  #     Path: "/"
+  #     Roles:
+  #       - !Ref CsServerInstanceRole
+
+  # roles attached to instance-profile
+  # CsServerInstanceRole:
+  #     Type: AWS::IAM::Role
+  #     Properties:
+  #       AssumeRolePolicyDocument:
+  #         Version: "2012-10-17"
+  #         Statement:
+  #           - Effect: Allow
+  #             Principal:
+  #               Service:
+  #                 - ec2.amazonaws.com
+  #             Action:
+  #               - sts:AssumeRole
+  #       Path: "/"
+  #       ManagedPolicyArns:
+  #         - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+
+  # toggle the min and max size to have instances deployed
+  CsServerAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: 
+        - eu-west-2a
+      HealthCheckGracePeriod: 10
+      HealthCheckType: EC2
+      LaunchConfigurationName: !Ref CsLaunchConfig
+      MaxSize: "1"
+      MinSize: "1"
+      TerminationPolicies: 
+        - OldestInstance
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ASG"
+          PropagateAtLaunch: true
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub "${stackName}-net-pub-subnet-a"
+
+# Exporting outputs to use in downstream stacks
+Outputs:
+  StackName:
+    Value: !Ref AWS::StackName
+
+
+

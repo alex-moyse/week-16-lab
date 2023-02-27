@@ -71,6 +71,6 @@ jobs:
       - name: deploy cloudformation
         working-directory: infra
         run: |
-          ./deploy-ec2.sh
+          ./deploy.sh
 
       - run: echo "🍏 This job's status is ${{ job.status }}."

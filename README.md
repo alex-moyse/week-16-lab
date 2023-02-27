@@ -44,11 +44,11 @@ firefox http://localhost:3000/?language=gurmukhi
 
 ## Your mission
 
-1. [ ] Fork the repo
-1. [ ] Get it working locally
-1. [ ] implement the missing steps in `.github/workflows/main.yaml`
-   1. [ ] Add supply chain scanning and fix any issues
-   1. [ ] Add unit testing
+1. [x] Fork the repo
+1. [x] Get it working locally
+1. [x] implement the missing steps in `.github/workflows/main.yaml`
+   1. [x] Add supply chain scanning and fix any issues
+   1. [x] Add unit testing
 1. [ ] Create base infra as per two objectives and target arch below
 1. [ ] Get infra scripts and continious deployment working by implementing `/infra/deploy.sh`
 1. [ ] Implement the `/about` page and watch it deploy end-to-end
