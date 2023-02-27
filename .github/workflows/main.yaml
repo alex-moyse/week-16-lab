@@ -68,5 +68,9 @@ jobs:
       #   working-directory: 
 
       # TODO: add deployment to cloudformation
+      - name: deploy cloudformation
+        working-directory: infra
+        run: |
+          ./deploy-ec2.sh
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
