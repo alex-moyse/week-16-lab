@@ -51,9 +51,21 @@ jobs:
 
       # TODO: add supply chain scanning
 
+      - name: supply chain scanning
+        working-directory: app
+        run: |
+          npm audit
+
       # TODO: add unit testing
 
+      - name: unit testing
+        working-directory: app/lib
+        run: |
+          npm test
+
       # TODO: add cloudformation linting
+      # - name: cloudformation linting
+      #   working-directory: 
 
       # TODO: add deployment to cloudformation
 
